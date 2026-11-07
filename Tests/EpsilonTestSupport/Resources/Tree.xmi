@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tree:Tree xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tree="http://swift-epsilon.test/tree" label="root">
+  <children label="a">
+    <children xsi:type="tree:Leaf" label="a1"/>
+    <children xsi:type="tree:Leaf" label="a2"/>
+  </children>
+  <children xsi:type="tree:Leaf" label="b"/>
+</tree:Tree>

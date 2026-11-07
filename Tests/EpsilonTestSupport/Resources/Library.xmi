@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library:Library xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:library="http://swift-epsilon.test/library" name="City Library">
+  <items xsi:type="library:Book" title="Dune" pages="412" price="9.5" genre="fiction" authors="//@authors.0">
+    <keywords>sand</keywords>
+    <keywords>spice</keywords>
+  </items>
+  <items xsi:type="library:Book" title="Cosmos" pages="396" price="12.0" genre="science" authors="//@authors.1"/>
+  <items xsi:type="library:Book" title="Emma" pages="474" price="7.25" genre="fiction" available="false" authors="//@authors.2"/>
+  <items xsi:type="library:Magazine" title="Nature Weekly" issue="7"/>
+  <authors name="Frank Herbert" books="//@items.0"/>
+  <authors name="Carl Sagan" books="//@items.1"/>
+  <authors name="Jane Austen" books="//@items.2"/>
+</library:Library>
