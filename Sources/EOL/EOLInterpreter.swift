@@ -502,7 +502,9 @@ public final class EOLInterpreter {
             let index = try await evaluate(indexExpression)
             switch receiver {
             case .collection(let collection):
-                guard let position = index.integerValue, collection.elements.indices.contains(position) else {
+                guard let position = index.integerValue.flatMap({ Int(exactly: $0) }),
+                    collection.elements.indices.contains(position)
+                else {
                     throw EOLError(.indexOutOfBounds, "Index \(index) is out of bounds for a collection of size \(collection.count)")
                 }
                 collection.replace(at: position, with: value)
@@ -532,7 +534,7 @@ public final class EOLInterpreter {
 
     /// Executes a `while` loop.
     private func executeWhile(_ condition: EOLExpression, _ body: EOLBlock) async throws -> EOLFlow {
-        var count = 1
+        var count: Int64 = 1
         loopDepth += 1
         defer { loopDepth -= 1 }
         while try await evaluateCondition(condition) {
@@ -557,7 +559,7 @@ public final class EOLInterpreter {
         let items: [EOLValue]
         if case .map(let map) = source { items = map.keys } else { items = source.asElements }
         let filter = try iterator.type.map { try resolveType($0) }
-        var count = 1
+        var count: Int64 = 1
         loopDepth += 1
         defer { loopDepth -= 1 }
         for (position, item) in items.enumerated() {

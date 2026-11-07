@@ -13,8 +13,8 @@ package enum EOLTokenKind: Equatable, Sendable {
     case identifier(String, quoted: Bool)
     /// A string literal with its escapes decoded.
     case string(String)
-    /// An integer literal.
-    case integer(Int)
+    /// An integer literal of 64 bits.
+    case integer(Int64)
     /// A real literal.
     case real(Double)
     /// An operator or punctuation symbol.
@@ -494,7 +494,7 @@ package struct EOLLexer {
             }
             scan.tokens.append(EOLToken(kind: .real(value), range: range(start, index)))
         } else {
-            guard let value = Int(digits) else {
+            guard let value = Int64(digits) else {
                 report(.invalidNumber, "Integer literal '\(digits)' is out of range", start, index)
                 return index
             }

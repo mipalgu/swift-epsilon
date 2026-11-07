@@ -4,6 +4,7 @@
 //
 //  Copyright © 2026 Rene Hexel. All rights reserved.
 //
+import ECore
 import EMFBase
 import EOL
 import Foundation
@@ -101,6 +102,9 @@ public final class EGXDirectoryFileSystem: EGXFileSystem {
 
     /// Writes a file, creating its directory as needed.
     ///
+    /// The file is replaced atomically where the runtime supports it; on WASI, which has no
+    /// atomic replacement, it is written directly.
+    ///
     /// - Parameters:
     ///   - text: The text.
     ///   - path: The path.
@@ -108,7 +112,7 @@ public final class EGXDirectoryFileSystem: EGXFileSystem {
     public func write(_ text: String, to path: String) throws {
         let url = try url(for: path)
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try text.write(to: url, atomically: true, encoding: .utf8)
+        try text.write(to: url, atomically: FileURIHandler.writesAtomically, encoding: .utf8)
     }
 }
 

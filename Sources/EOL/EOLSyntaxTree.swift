@@ -52,8 +52,8 @@ public struct EOLTypeReference: Sendable, Hashable, CustomStringConvertible {
 public enum EOLLiteral: Sendable, Hashable {
     /// A string literal.
     case string(String)
-    /// An integer literal.
-    case integer(Int)
+    /// An integer literal of 64 bits.
+    case integer(Int64)
     /// A real literal.
     case real(Double)
     /// A Boolean literal.

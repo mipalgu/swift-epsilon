@@ -168,6 +168,15 @@ struct EOLBuiltinTests {
         #expect(value.description == "3")
     }
 
+    @Test("Integers have 64 bits on every platform")
+    func sixtyFourBitIntegers() async throws {
+        let module = try EOLSyntax.parse("return 9223372036854775806 + 1 - 4294967296 * 2;").get()
+        let value = try await EOLInterpreter(output: EOLStringOutput()).run(module)
+        let expected: Int64 = .max - 8_589_934_592
+        #expect(value == .integer(expected))
+        #expect(value.integerValue == expected)
+    }
+
     @Test("Template output outside a template is reported")
     func templateOutsideTemplate() async throws {
         let interpreter = EOLInterpreter(output: EOLStringOutput())

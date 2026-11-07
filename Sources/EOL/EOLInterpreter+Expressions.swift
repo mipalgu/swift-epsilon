@@ -16,78 +16,73 @@ extension EOLInterpreter {
     /// - Throws: ``EOLError`` located at the innermost failing sub-expression.
     public func evaluate(_ expression: EOLExpression) async throws -> EOLValue {
         do {
-            return try await evaluateUnlocated(expression)
+            switch expression.kind {
+            case .literal(let literal):
+                switch literal {
+                case .string(let text): return .string(text)
+                case .integer(let number): return .integer(number)
+                case .real(let number): return .real(number)
+                case .boolean(let flag): return .boolean(flag)
+                case .undefined: return .undefined
+                }
+            case .name(let name):
+                return try resolveName(name)
+            case .type(let reference):
+                return .type(try resolveType(reference))
+            case .enumerationLiteral(let reference, let literal):
+                return try enumerationLiteral(reference, literal)
+            case .property(let targetExpression, let name, let navigation, let extended):
+                let receiver = try await evaluate(targetExpression)
+                if !receiver.isDefined {
+                    if navigation == .safeDot { return .undefined }
+                    throw EOLError(.undefinedReceiver, "Called feature '\(name)' on an undefined value")
+                }
+                if extended { return extendedProperties[receiver]?[name] ?? .undefined }
+                return try await property(of: receiver, name)
+            case .call(let targetExpression, let name, let argumentExpressions, let navigation):
+                guard let targetExpression else {
+                    return try await callGlobal(name, arguments: try await evaluateAll(argumentExpressions))
+                }
+                let receiver = try await evaluate(targetExpression)
+                if !receiver.isDefined, navigation == .safeDot { return .undefined }
+                let arguments = try await evaluateAll(argumentExpressions)
+                return try await call(name, on: receiver, arguments: arguments, preferBuiltins: navigation == .arrow)
+            case .firstOrder(let targetExpression, let name, let iterators, let bodies, let navigation):
+                let receiver = try await evaluate(targetExpression)
+                if !receiver.isDefined {
+                    if navigation == .safeDot { return .undefined }
+                    throw EOLError(.undefinedReceiver, "Called operation '\(name)' on an undefined value")
+                }
+                return try await firstOrder(name, on: receiver, iterator: iterators[0], bodies: bodies)
+            case .binary(let op, let left, let right):
+                return try await binary(op, left, right)
+            case .unary(let op, let operandExpression):
+                let operand = try await evaluate(operandExpression)
+                switch (op, operand) {
+                case (.not, .boolean(let flag)): return .boolean(!flag)
+                case (.negate, .integer(let number)): return .integer(-number)
+                case (.negate, .real(let number)): return .real(-number)
+                default:
+                    throw EOLError(.typeMismatch, "Operator '\(op.rawValue)' cannot be applied to \(try await typeOf(operand).name)")
+                }
+            case .conditional(let condition, let whenTrue, let whenFalse):
+                return try await evaluateCondition(condition) ? try await evaluate(whenTrue) : try await evaluate(whenFalse)
+            case .elvis(let value, let fallback):
+                let primary = try await evaluate(value)
+                return primary.isDefined ? primary : try await evaluate(fallback)
+            case .collection(let reference, let items):
+                return try await collectionLiteral(reference, items)
+            case .map(_, let entries):
+                let map = EOLMap()
+                for entry in entries { map.put(try await evaluate(entry.key), try await evaluate(entry.value)) }
+                return .map(map)
+            case .new(let reference, let arguments):
+                return try await instantiate(try resolveType(reference), reference: reference, arguments: arguments)
+            case .item(let targetExpression, let indexExpression):
+                return try await item(of: try await evaluate(targetExpression), at: try await evaluate(indexExpression))
+            }
         } catch let error as EOLError {
             throw error.located(at: expression.range, document: document)
-        }
-    }
-
-    /// Evaluates an expression without locating its errors.
-    private func evaluateUnlocated(_ expression: EOLExpression) async throws -> EOLValue {
-        switch expression.kind {
-        case .literal(let literal):
-            switch literal {
-            case .string(let text): return .string(text)
-            case .integer(let number): return .integer(number)
-            case .real(let number): return .real(number)
-            case .boolean(let flag): return .boolean(flag)
-            case .undefined: return .undefined
-            }
-        case .name(let name):
-            return try resolveName(name)
-        case .type(let reference):
-            return .type(try resolveType(reference))
-        case .enumerationLiteral(let reference, let literal):
-            return try enumerationLiteral(reference, literal)
-        case .property(let targetExpression, let name, let navigation, let extended):
-            let receiver = try await evaluate(targetExpression)
-            if !receiver.isDefined {
-                if navigation == .safeDot { return .undefined }
-                throw EOLError(.undefinedReceiver, "Called feature '\(name)' on an undefined value")
-            }
-            if extended { return extendedProperties[receiver]?[name] ?? .undefined }
-            return try await property(of: receiver, name)
-        case .call(let targetExpression, let name, let argumentExpressions, let navigation):
-            guard let targetExpression else {
-                return try await callGlobal(name, arguments: try await evaluateAll(argumentExpressions))
-            }
-            let receiver = try await evaluate(targetExpression)
-            if !receiver.isDefined, navigation == .safeDot { return .undefined }
-            let arguments = try await evaluateAll(argumentExpressions)
-            return try await call(name, on: receiver, arguments: arguments, preferBuiltins: navigation == .arrow)
-        case .firstOrder(let targetExpression, let name, let iterators, let bodies, let navigation):
-            let receiver = try await evaluate(targetExpression)
-            if !receiver.isDefined {
-                if navigation == .safeDot { return .undefined }
-                throw EOLError(.undefinedReceiver, "Called operation '\(name)' on an undefined value")
-            }
-            return try await firstOrder(name, on: receiver, iterator: iterators[0], bodies: bodies)
-        case .binary(let op, let left, let right):
-            return try await binary(op, left, right)
-        case .unary(let op, let operandExpression):
-            let operand = try await evaluate(operandExpression)
-            switch (op, operand) {
-            case (.not, .boolean(let flag)): return .boolean(!flag)
-            case (.negate, .integer(let number)): return .integer(-number)
-            case (.negate, .real(let number)): return .real(-number)
-            default:
-                throw EOLError(.typeMismatch, "Operator '\(op.rawValue)' cannot be applied to \(try await typeOf(operand).name)")
-            }
-        case .conditional(let condition, let whenTrue, let whenFalse):
-            return try await evaluateCondition(condition) ? try await evaluate(whenTrue) : try await evaluate(whenFalse)
-        case .elvis(let value, let fallback):
-            let primary = try await evaluate(value)
-            return primary.isDefined ? primary : try await evaluate(fallback)
-        case .collection(let reference, let items):
-            return try await collectionLiteral(reference, items)
-        case .map(_, let entries):
-            let map = EOLMap()
-            for entry in entries { map.put(try await evaluate(entry.key), try await evaluate(entry.value)) }
-            return .map(map)
-        case .new(let reference, let arguments):
-            return try await instantiate(try resolveType(reference), reference: reference, arguments: arguments)
-        case .item(let targetExpression, let indexExpression):
-            return try await item(of: try await evaluate(targetExpression), at: try await evaluate(indexExpression))
         }
     }
 
@@ -344,7 +339,7 @@ extension EOLInterpreter {
             return .string(await string(of: left) + (await string(of: right)))
         }
         if case .integer(let a) = left, case .integer(let b) = right {
-            let (result, overflow): (Int, Bool)
+            let (result, overflow): (Int64, Bool)
             switch op {
             case .plus: (result, overflow) = a.addingReportingOverflow(b)
             case .minus: (result, overflow) = a.subtractingReportingOverflow(b)
@@ -437,19 +432,19 @@ extension EOLInterpreter {
         switch receiver {
         case .collection(let collection):
             guard let position = index.integerValue else { throw EOLError(.typeMismatch, "Collection index must be an integer") }
-            guard collection.elements.indices.contains(position) else {
+            guard let offset = Int(exactly: position), collection.elements.indices.contains(offset) else {
                 throw EOLError(.indexOutOfBounds, "Index \(position) is out of bounds for a collection of size \(collection.count)")
             }
-            return collection.elements[position]
+            return collection.elements[offset]
         case .map(let map):
             return map[index] ?? .undefined
         case .string(let text):
             guard let position = index.integerValue else { throw EOLError(.typeMismatch, "String index must be an integer") }
             let characters = Array(text)
-            guard characters.indices.contains(position) else {
+            guard let offset = Int(exactly: position), characters.indices.contains(offset) else {
                 throw EOLError(.indexOutOfBounds, "Index \(position) is out of bounds for a string of length \(characters.count)")
             }
-            return .string(String(characters[position]))
+            return .string(String(characters[offset]))
         default:
             throw EOLError(.typeMismatch, "Values of type \(try await typeOf(receiver).name) have no items")
         }

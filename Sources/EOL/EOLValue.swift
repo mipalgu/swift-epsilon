@@ -19,8 +19,8 @@ public enum EOLValue: Hashable, CustomStringConvertible {
     case undefined
     /// A truth value.
     case boolean(Bool)
-    /// A whole number.
-    case integer(Int)
+    /// A whole number of 64 bits, whatever the word size of the platform.
+    case integer(Int64)
     /// A real number.
     case real(Double)
     /// A character string.
@@ -51,7 +51,7 @@ public enum EOLValue: Hashable, CustomStringConvertible {
     }
 
     /// The integer, if the value is an integer.
-    public var integerValue: Int? {
+    public var integerValue: Int64? {
         if case .integer(let value) = self { return value }
         return nil
     }

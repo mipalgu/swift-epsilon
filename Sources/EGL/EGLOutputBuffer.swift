@@ -80,7 +80,7 @@ public final class EGLOutputBuffer: EOLHostObject, EOLOutputStream {
             guard let count = arguments[0].integerValue, count >= 0 else {
                 throw EOLError(.typeMismatch, "'chop' expects a non-negative integer")
             }
-            captures[captures.count - 1] = String(text.dropLast(count))
+            captures[captures.count - 1] = String(text.dropLast(Int(clamping: count)))
             return .undefined
         case (O.setContentType, 1):
             guard let type = arguments[0].stringValue, let style = EGLLanguage.contentTypes[type.lowercased()] else {

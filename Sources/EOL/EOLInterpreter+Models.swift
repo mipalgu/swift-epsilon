@@ -222,10 +222,10 @@ extension EOLInterpreter {
                 return .enumerationLiteral(EOLEnumerationLiteral(enumeration: enumeration.name, name: literal.name, value: literal.value))
             }
             return .string(text)
-        case let number as Int: return .integer(number)
-        case let number as Int8: return .integer(Int(number))
-        case let number as Int16: return .integer(Int(number))
-        case let number as Int64: return .integer(Int(number))
+        case let number as Int: return .integer(Int64(number))
+        case let number as Int8: return .integer(Int64(number))
+        case let number as Int16: return .integer(Int64(number))
+        case let number as Int64: return .integer(number)
         case let number as Double: return .real(number)
         case let number as Float: return .real(Double(number))
         case let number as Decimal: return .real(NSDecimalNumber(decimal: number).doubleValue)
@@ -333,7 +333,7 @@ extension EOLInterpreter {
                 switch item {
                 case .enumerationLiteral(let literal): name = literal.name
                 case .string(let text): name = enumeration.getLiteral(name: text)?.name ?? enumeration.getLiteral(text: text)?.name
-                case .integer(let number): name = enumeration.getLiteral(value: number)?.name
+                case .integer(let number): name = Int(exactly: number).flatMap { enumeration.getLiteral(value: $0) }?.name
                 default: name = nil
                 }
                 guard let name, enumeration.getLiteral(name: name) != nil else {
@@ -346,12 +346,12 @@ extension EOLInterpreter {
             case (.real, .real(let number)): return number
             case (.float, .integer(let number)): return Float(number)
             case (.float, .real(let number)): return Float(number)
-            case (.integer, .integer(let number)): return number
+            case (.integer, .integer(let number)): return try Self.storedInteger(number)
             case (.boolean, .boolean(let flag)): return flag
             case (.string, .string(let text)): return text
             case (.string, .enumerationLiteral(let literal)): return literal.name
             case (.other, .string(let text)): return text
-            case (.other, .integer(let number)): return number
+            case (.other, .integer(let number)): return try Self.storedInteger(number)
             case (.other, .real(let number)): return number
             case (.other, .boolean(let flag)): return flag
             default:
@@ -368,6 +368,20 @@ extension EOLInterpreter {
         }
         guard value.isDefined else { return nil }
         return try convert(value)
+    }
+
+    /// Converts an integer for storing in a model, which holds whole numbers in the word size
+    /// of the platform.
+    ///
+    /// - Parameter number: The integer.
+    /// - Returns: The integer in the word size of the platform.
+    /// - Throws: ``EOLError`` with the code ``EOLDiagnosticCode/arithmetic`` if the integer
+    ///   does not fit.
+    private static func storedInteger(_ number: Int64) throws -> Int {
+        guard let stored = Int(exactly: number) else {
+            throw EOLError(.arithmetic, "Integer \(number) is out of range for a model attribute on this platform")
+        }
+        return stored
     }
 
     /// Converts a value for storing in a reference.

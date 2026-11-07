@@ -232,7 +232,7 @@ extension EOLInterpreter {
             return value
         }
         /// The integer argument at a position, or a type error.
-        func argumentInteger(_ index: Int) throws -> Int {
+        func argumentInteger(_ index: Int) throws -> Int64 {
             guard index < arguments.count, let value = arguments[index].integerValue else {
                 throw EOLError(.typeMismatch, "'\(name)' expects an integer argument")
             }
@@ -240,7 +240,7 @@ extension EOLInterpreter {
         }
         let characters = Array(text)
         switch (name, arguments.count) {
-        case ("length", 0), ("size", 0): return .integer(characters.count)
+        case ("length", 0), ("size", 0): return .integer(Int64(characters.count))
         case ("toUpperCase", 0): return .string(text.uppercased())
         case ("toLowerCase", 0): return .string(text.lowercased())
         case ("firstToUpperCase", 0), ("ftuc", 0):
@@ -257,20 +257,20 @@ extension EOLInterpreter {
         case ("equalsIgnoreCase", 1): return .boolean(text.lowercased() == (try argumentString(0)).lowercased())
         case ("indexOf", 1), ("lastIndexOf", 1):
             let needle = Array(try argumentString(0))
-            return .integer(Self.index(of: needle, in: characters, last: name == "lastIndexOf"))
+            return .integer(Int64(Self.index(of: needle, in: characters, last: name == "lastIndexOf")))
         case ("characterAt", 1), ("charAt", 1):
             let index = try argumentInteger(0)
-            guard characters.indices.contains(index) else {
+            guard let offset = Int(exactly: index), characters.indices.contains(offset) else {
                 throw EOLError(.indexOutOfBounds, "Index \(index) is out of bounds for a string of length \(characters.count)")
             }
-            return .string(String(characters[index]))
+            return .string(String(characters[offset]))
         case ("substring", 1), ("substring", 2):
             let start = try argumentInteger(0)
-            let end = arguments.count == 2 ? try argumentInteger(1) : characters.count
-            guard start >= 0, end <= characters.count, start <= end else {
+            let end = arguments.count == 2 ? try argumentInteger(1) : Int64(characters.count)
+            guard start >= 0, end <= Int64(characters.count), start <= end else {
                 throw EOLError(.indexOutOfBounds, "Substring range \(start)..<\(end) is out of bounds for length \(characters.count)")
             }
-            return .string(String(characters[start..<end]))
+            return .string(String(characters[Int(start)..<Int(end)]))
         case ("split", 1):
             let parts = try Self.split(text, regex: try argumentString(0))
             return .collection(EOLCollection(.sequence, parts.map { .string($0) }))
@@ -283,10 +283,10 @@ extension EOLInterpreter {
             let pattern = try Self.regex(try argumentString(0))
             let template = Self.javaReplacementTemplate(try argumentString(1))
             return .string(pattern.stringByReplacingMatches(in: text, range: NSRange(text.startIndex..., in: text), withTemplate: template))
-        case ("isInteger", 0): return .boolean(Int(text) != nil)
+        case ("isInteger", 0): return .boolean(Int64(text) != nil)
         case ("isReal", 0): return .boolean(Double(text) != nil)
         case ("asInteger", 0):
-            guard let number = Int(text) else { throw EOLError(.typeMismatch, "'\(text)' is not an integer") }
+            guard let number = Int64(text) else { throw EOLError(.typeMismatch, "'\(text)' is not an integer") }
             return .integer(number)
         case ("asReal", 0), ("asDouble", 0), ("asFloat", 0):
             guard let number = Double(text) else { throw EOLError(.typeMismatch, "'\(text)' is not a real") }
@@ -298,7 +298,7 @@ extension EOLInterpreter {
             let padding = try argumentString(1)
             guard let right = arguments[2].booleanValue else { throw EOLError(.typeMismatch, "'pad' expects a Boolean") }
             var result = text
-            while result.count < length, !padding.isEmpty {
+            while Int64(result.count) < length, !padding.isEmpty {
                 result = right ? result + padding : padding + result
             }
             return .string(result)
@@ -390,9 +390,9 @@ extension EOLInterpreter {
         }
         switch (name, arguments.count) {
         case ("abs", 0): return integer.map { .integer(abs($0)) } ?? .real(abs(real))
-        case ("floor", 0): return integer.map { .integer($0) } ?? .integer(Int(real.rounded(.down)))
-        case ("ceiling", 0): return integer.map { .integer($0) } ?? .integer(Int(real.rounded(.up)))
-        case ("round", 0): return integer.map { .integer($0) } ?? .integer(Int((real + 0.5).rounded(.down)))
+        case ("floor", 0): return integer.map { .integer($0) } ?? .integer(Int64(real.rounded(.down)))
+        case ("ceiling", 0): return integer.map { .integer($0) } ?? .integer(Int64(real.rounded(.up)))
+        case ("round", 0): return integer.map { .integer($0) } ?? .integer(Int64((real + 0.5).rounded(.down)))
         case ("log", 0): return .real(Foundation.log(real))
         case ("log10", 0): return .real(Foundation.log10(real))
         case ("sqrt", 0): return .real(real.squareRoot())
@@ -417,14 +417,22 @@ extension EOLInterpreter {
             guard let integer, let end = arguments[0].integerValue, let step = arguments[1].integerValue, step != 0 else {
                 throw EOLError(.typeMismatch, "'iota' expects an integer end and a non-zero integer step")
             }
-            return .collection(EOLCollection(.sequence, Array(stride(from: integer, through: end, by: step)).map { .integer($0) }))
+            var values: [EOLValue] = []
+            var current = integer
+            while step > 0 ? current <= end : current >= end {
+                values.append(.integer(current))
+                let (next, overflow) = current.addingReportingOverflow(step)
+                if overflow { break }
+                current = next
+            }
+            return .collection(EOLCollection(.sequence, values))
         case ("toBinary", 0):
             guard let integer else { return nil }
             return .string(String(integer, radix: 2))
         case ("toHex", 0):
             guard let integer else { return nil }
             return .string(String(integer, radix: 16))
-        case ("asInteger", 0): return .integer(integer ?? Int(real))
+        case ("asInteger", 0): return .integer(integer ?? Int64(real))
         case ("asReal", 0), ("asDouble", 0), ("asFloat", 0): return .real(real)
         default: return nil
         }
@@ -436,28 +444,32 @@ extension EOLInterpreter {
     private func collectionOperation(_ name: String, _ collection: EOLCollection, _ arguments: [EOLValue]) async throws -> EOLValue? {
         let elements = collection.elements
         /// The integer argument at a position, or a type error.
-        func argumentInteger(_ index: Int) throws -> Int {
+        func argumentInteger(_ index: Int) throws -> Int64 {
             guard index < arguments.count, let value = arguments[index].integerValue else {
                 throw EOLError(.typeMismatch, "'\(name)' expects an integer argument")
             }
             return value
         }
-        /// The element at a position, or an index error.
-        func positional(_ index: Int) throws -> EOLValue {
-            guard elements.indices.contains(index) else {
+        /// The offset of a position within the elements, or an index error.
+        func offset(_ index: Int64) throws -> Int {
+            guard let offset = Int(exactly: index), elements.indices.contains(offset) else {
                 throw EOLError(.indexOutOfBounds, "Index \(index) is out of bounds for a collection of size \(elements.count)")
             }
-            return elements[index]
+            return offset
+        }
+        /// The element at a position, or an index error.
+        func positional(_ index: Int64) throws -> EOLValue {
+            elements[try offset(index)]
         }
         switch (name, arguments.count) {
-        case ("size", 0): return .integer(elements.count)
+        case ("size", 0): return .integer(Int64(elements.count))
         case ("isEmpty", 0): return .boolean(elements.isEmpty)
         case ("notEmpty", 0): return .boolean(!elements.isEmpty)
         case ("includes", 1), ("contains", 1): return .boolean(collection.contains(arguments[0]))
         case ("excludes", 1): return .boolean(!collection.contains(arguments[0]))
         case ("includesAll", 1): return .boolean(arguments[0].asElements.allSatisfy(collection.contains))
         case ("excludesAll", 1): return .boolean(!arguments[0].asElements.contains(where: collection.contains))
-        case ("count", 1): return .integer(elements.filter { $0 == arguments[0] }.count)
+        case ("count", 1): return .integer(Int64(elements.filter { $0 == arguments[0] }.count))
         case ("add", 1):
             let added = collection.append(arguments[0])
             try await writeBack(collection)
@@ -477,8 +489,7 @@ extension EOLInterpreter {
             try await writeBack(collection)
             return .boolean(changed)
         case ("removeAt", 1):
-            let index = try argumentInteger(0)
-            _ = try positional(index)
+            let index = try offset(try argumentInteger(0))
             let removed = collection.remove(at: index)
             try await writeBack(collection)
             return removed
@@ -524,7 +535,7 @@ extension EOLInterpreter {
         case ("fourth", 0): return elements.count > 3 ? elements[3] : .undefined
         case ("last", 0): return elements.last ?? .undefined
         case ("at", 1), ("get", 1): return try positional(try argumentInteger(0))
-        case ("indexOf", 1): return .integer(elements.firstIndex(of: arguments[0]) ?? -1)
+        case ("indexOf", 1): return .integer(elements.firstIndex(of: arguments[0]).map(Int64.init) ?? -1)
         case ("invert", 0), ("reverse", 0): return .collection(EOLCollection(collection.kind, elements.reversed()))
         case ("random", 0): return elements.randomElement() ?? .undefined
         case ("sort", 0):
@@ -608,8 +619,8 @@ extension EOLInterpreter {
             return flag
         }
         /// Counts the items for which the body holds, stopping once the count exceeds a limit.
-        func matches(limit: Int? = nil) async throws -> Int {
-            var count = 0
+        func matches(limit: Int64? = nil) async throws -> Int64 {
+            var count: Int64 = 0
             for item in items where try await test(item) {
                 count += 1
                 if let limit, count > limit { break }
@@ -711,7 +722,7 @@ extension EOLInterpreter {
         case ("containsValue", 1): return .boolean(map.values.contains(arguments[0]))
         case ("keySet", 0): return .collection(EOLCollection(.set, map.keys))
         case ("values", 0): return .collection(EOLCollection(.bag, map.values))
-        case ("size", 0): return .integer(map.count)
+        case ("size", 0): return .integer(Int64(map.count))
         case ("isEmpty", 0): return .boolean(map.count == 0)
         case ("notEmpty", 0): return .boolean(map.count > 0)
         case ("remove", 1): return map.remove(arguments[0]) ?? .undefined
