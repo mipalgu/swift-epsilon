@@ -5,8 +5,9 @@ How a transformation runs, how rules relate source and target elements, and whic
 ## Overview
 
 ETL rules transform elements of source models into elements of target models
-(Kolovos, Paige and Polack, "The Epsilon Transformation Language", ICMT 2008).
-Its semantics follow the Epsilon documentation; where the documentation leaves a
+(Kolovos, Paige and Polack,
+"[The Epsilon Transformation Language](https://doi.org/10.1007/978-3-540-69927-9_4)", ICMT 2008).
+Its semantics follow the [Epsilon documentation](https://eclipse.dev/epsilon/doc/etl/); where the documentation leaves a
 detail open, the choice made here is stated.
 
 ## Phases

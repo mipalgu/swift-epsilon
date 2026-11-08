@@ -5,7 +5,8 @@ Parse and run programs in the Epsilon Object Language against Ecore models.
 ## Overview
 
 EOL is the imperative core of the Epsilon family of model management languages
-(Kolovos, Paige and Polack, "The Epsilon Object Language (EOL)", ECMDA-FA 2006).
+(Kolovos, Paige and Polack,
+"[The Epsilon Object Language (EOL)](https://doi.org/10.1007/11787044_11)", ECMDA-FA 2006).
 This module provides a hand-written lexer and recovering parser that report
 `SourceDiagnostic` values with lines and columns, an outline and
 highlighting tokens, and an interpreter that works on the `Resource` actors of

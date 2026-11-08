@@ -5,7 +5,7 @@ How the module parses, resolves and evaluates Epsilon Object Language programs.
 ## Overview
 
 EOL is the imperative core of the Epsilon family (Kolovos, Paige and Polack,
-"The Epsilon Object Language (EOL)", ECMDA-FA 2006). It combines an
+"[The Epsilon Object Language (EOL)](https://doi.org/10.1007/11787044_11)", ECMDA-FA 2006). It combines an
 OCL-like expression language with statements, user-defined operations and
 access to the elements of one or more models. The constructs this module
 supports are listed in <doc:LanguageCoverage>.

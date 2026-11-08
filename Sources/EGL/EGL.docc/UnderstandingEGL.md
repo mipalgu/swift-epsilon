@@ -5,9 +5,11 @@ How templates are rendered, how protected regions are merged, how EGX rules gene
 ## Overview
 
 EGL templates mix static text with EOL code (Rose, Paige, Kolovos and Polack,
-"The Epsilon Generation Language", ECMDA-FA 2008). EGX adds rules that apply a
+"[The Epsilon Generation Language](https://doi.org/10.1007/978-3-540-69100-6_1)", ECMDA-FA
+2008). EGX adds rules that apply a
 template to each element of a model and write the result to a file. Their
-semantics follow the Epsilon documentation; where the documentation leaves a
+semantics follow the Epsilon documentation of [EGL](https://eclipse.dev/epsilon/doc/egl/) and
+[EGX](https://eclipse.dev/epsilon/doc/egx/); where the documentation leaves a
 detail open, the choice made here is stated.
 
 ## Template syntax

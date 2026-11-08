@@ -4,8 +4,8 @@ The subset of the Epsilon Object Language that the EOL module supports.
 
 ## Overview
 
-The semantics follow the Epsilon documentation and the original paper on EOL
-(ECMDA-FA 2006). Where the documentation leaves a detail open, the choice made
+The semantics follow the [Epsilon documentation](https://eclipse.dev/epsilon/doc/eol/) and the
+[original paper on EOL](https://doi.org/10.1007/11787044_11) (ECMDA-FA 2006). Where the documentation leaves a detail open, the choice made
 here is stated. The dialects are covered by the Understanding articles of the
 EVL, ETL and EGL modules.
 

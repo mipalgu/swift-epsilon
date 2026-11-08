@@ -5,7 +5,8 @@ Transform Ecore models with the Epsilon Transformation Language.
 ## Overview
 
 ETL rules transform elements of source models into elements of target models
-(Kolovos, Paige and Polack, "The Epsilon Transformation Language", ICMT 2008).
+(Kolovos, Paige and Polack,
+"[The Epsilon Transformation Language](https://doi.org/10.1007/978-3-540-69927-9_4)", ICMT 2008).
 ``ETLSyntax`` parses a module, and ``ETLTransformer`` runs it: targets are created
 for every match before any rule body runs, and `equivalent()`, `equivalents()`
 and the special assignment `::=` resolve source elements to their targets.

@@ -105,17 +105,20 @@ Each module has its own published documentation:
 
 See the details in the LICENCE file.
 
-This package is an independent implementation based on the public Epsilon
-documentation and papers. Epsilon itself is an Eclipse project under the
+This package is an independent implementation based on the public
+[Epsilon documentation](https://eclipse.dev/epsilon/doc/) and papers. Epsilon itself is an Eclipse project under the
 Eclipse Public License 2.0.
 
 ## References
 
 - [Eclipse Epsilon](https://eclipse.dev/epsilon/) - The reference implementation
-- Kolovos, Paige and Polack, "The Epsilon Object Language (EOL)", ECMDA-FA 2006
-- Kolovos, Paige and Polack, "The Epsilon Transformation Language", ICMT 2008
-- Kolovos, Paige and Polack, "On the Evolution of OCL for Capturing Structural
-  Constraints in Modelling Languages", 2009 (EVL)
-- Rose, Paige, Kolovos and Polack, "The Epsilon Generation Language", ECMDA-FA 2008
+- Kolovos, Paige and Polack, "[The Epsilon Object Language (EOL)](https://doi.org/10.1007/11787044_11)",
+  ECMDA-FA 2006
+- Kolovos, Paige and Polack, "[The Epsilon Transformation Language](https://doi.org/10.1007/978-3-540-69927-9_4)",
+  ICMT 2008
+- Kolovos, Paige and Polack, "[On the Evolution of OCL for Capturing Structural
+  Constraints in Modelling Languages](https://doi.org/10.1007/978-3-642-11447-2_13)", 2009 (EVL)
+- Rose, Paige, Kolovos and Polack, "[The Epsilon Generation Language](https://doi.org/10.1007/978-3-540-69100-6_1)",
+  ECMDA-FA 2008
 - [Eclipse Modeling Framework (EMF)](https://eclipse.dev/emf/) - The metamodelling foundation
 - [swift-ecore](https://github.com/mipalgu/swift-ecore) - The Swift Ecore metamodelling framework

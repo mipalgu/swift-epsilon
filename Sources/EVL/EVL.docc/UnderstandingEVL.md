@@ -5,8 +5,9 @@ How validation runs, how results are reported and which EVL constructs are suppo
 ## Overview
 
 EVL adds contexts, constraints, critiques and fixes to EOL (Kolovos, Paige and
-Polack, "On the Evolution of OCL for Capturing Structural Constraints in
-Modelling Languages", 2009). Its semantics follow the Epsilon documentation;
+Polack, "[On the Evolution of OCL for Capturing Structural Constraints in
+Modelling Languages](https://doi.org/10.1007/978-3-642-11447-2_13)", 2009). Its semantics follow
+the [Epsilon documentation](https://eclipse.dev/epsilon/doc/evl/);
 where the documentation leaves a detail open, the choice made here is stated.
 
 ## Execution order
