@@ -64,6 +64,9 @@ public final class EGXDirectoryFileSystem: EGXFileSystem {
     /// Whether paths may lead outside ``base``.
     public let allowsPathsOutsideBase: Bool
 
+    /// The character encoding in which files are read and written (UTF-8 by default).
+    public let encoding: TextEncoding
+
     /// Creates a file system rooted at a directory.
     ///
     /// - Parameters:
@@ -73,6 +76,24 @@ public final class EGXDirectoryFileSystem: EGXFileSystem {
     public init(base: URL, allowsPathsOutsideBase: Bool = false) {
         self.base = base.standardizedFileURL
         self.allowsPathsOutsideBase = allowsPathsOutsideBase
+        self.encoding = .utf8
+    }
+
+    /// Creates a file system rooted at a directory that reads and writes files in an encoding.
+    ///
+    /// Existing files are read in the encoding too, so that protected regions can be merged
+    /// into the files of an earlier run. A character that the encoding cannot hold makes
+    /// ``write(_:to:)`` fail without leaving a file behind.
+    ///
+    /// - Parameters:
+    ///   - base: The directory.
+    ///   - allowsPathsOutsideBase: Whether absolute paths and paths leading outside the
+    ///     directory are allowed.
+    ///   - encoding: The character encoding of the files.
+    public init(base: URL, allowsPathsOutsideBase: Bool, encoding: TextEncoding) {
+        self.base = base.standardizedFileURL
+        self.allowsPathsOutsideBase = allowsPathsOutsideBase
+        self.encoding = encoding
     }
 
     /// The URL of a target path.
@@ -97,7 +118,12 @@ public final class EGXDirectoryFileSystem: EGXFileSystem {
     public func read(_ path: String) throws -> String? {
         let url = try url(for: path)
         guard FileManager.default.fileExists(atPath: url.path) else { return nil }
-        return try String(contentsOf: url, encoding: .utf8)
+        if encoding == .utf8 { return try String(contentsOf: url, encoding: .utf8) }
+        let data = try Data(contentsOf: url)
+        guard let text = encoding.decode(data) else {
+            throw EOLError(.fileAccess, "Cannot read \(url.path): it is not valid \(encoding.name) text")
+        }
+        return text
     }
 
     /// Writes a file, creating its directory as needed.
@@ -108,11 +134,27 @@ public final class EGXDirectoryFileSystem: EGXFileSystem {
     /// - Parameters:
     ///   - text: The text.
     ///   - path: The path.
-    /// - Throws: An error if the path is not allowed or the file cannot be written.
+    /// - Throws: An error if the path is not allowed, if the encoding cannot hold a character of
+    ///   the text (the error names the character, its line and column, and no file is written;
+    ///   an ``EGXGenerator`` adds the target path), or if the file cannot be written.
     public func write(_ text: String, to path: String) throws {
         let url = try url(for: path)
+        let data: Data?
+        if encoding == .utf8 {
+            data = nil
+        } else {
+            do {
+                data = try encoding.encode(text)
+            } catch {
+                throw EOLError(.fileAccess, "\(error)")
+            }
+        }
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try text.write(to: url, atomically: FileURIHandler.writesAtomically, encoding: .utf8)
+        if let data {
+            try data.write(to: url, options: FileURIHandler.writesAtomically ? .atomic : [])
+        } else {
+            try text.write(to: url, atomically: FileURIHandler.writesAtomically, encoding: .utf8)
+        }
     }
 }
 

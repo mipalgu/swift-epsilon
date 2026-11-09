@@ -205,4 +205,40 @@ struct EGXGeneratorTests {
         let trusting = EGXDirectoryFileSystem(base: base, allowsPathsOutsideBase: true)
         #expect(try trusting.url(for: "../outside.txt").lastPathComponent == "outside.txt")
     }
+
+    @Test("The directory file system writes and reads files in the encoding it is given")
+    func directoryEncoding() throws {
+        let base = FileManager.default.temporaryDirectory.appendingPathComponent("EGXEncoding-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: base) }
+        let fileSystem = EGXDirectoryFileSystem(base: base, allowsPathsOutsideBase: false, encoding: .isoLatin1)
+        #expect(fileSystem.encoding == .isoLatin1)
+        try fileSystem.write("caf\u{E9}", to: "a/b.txt")
+        #expect(try Data(contentsOf: base.appendingPathComponent("a/b.txt")) == Data([0x63, 0x61, 0x66, 0xE9]))
+        #expect(try fileSystem.read("a/b.txt") == "caf\u{E9}")
+        #expect(throws: (any Error).self) { try EGXDirectoryFileSystem(base: base).read("a/b.txt") }
+        #expect(EGXDirectoryFileSystem(base: base).encoding == .utf8)
+    }
+
+    @Test("An unrepresentable character names the file, line and column and leaves no file")
+    func directoryUnrepresentable() throws {
+        let base = FileManager.default.temporaryDirectory.appendingPathComponent("EGXUnrepresentable-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: base) }
+        let fileSystem = EGXDirectoryFileSystem(base: base, allowsPathsOutsideBase: false, encoding: .isoLatin1)
+        do {
+            try fileSystem.write("one\ntwo \u{20AC}", to: "x.txt")
+            Issue.record("the write should have failed")
+        } catch let error as EOLError {
+            #expect(error.message.contains("U+20AC"))
+            #expect(error.message.contains("line 2, column 5"))
+        }
+        #expect(!FileManager.default.fileExists(atPath: base.appendingPathComponent("x.txt").path))
+    }
+
+    @Test("The default directory file system writes UTF-8 exactly as before")
+    func directoryDefaultBytes() throws {
+        let base = FileManager.default.temporaryDirectory.appendingPathComponent("EGXUtf8-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: base) }
+        try EGXDirectoryFileSystem(base: base).write("\u{20AC}", to: "u.txt")
+        #expect(try Data(contentsOf: base.appendingPathComponent("u.txt")) == Data("\u{20AC}".utf8))
+    }
 }
