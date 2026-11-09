@@ -151,7 +151,11 @@ public final class EGXDirectoryFileSystem: EGXFileSystem {
         }
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         if let data {
-            try data.write(to: url, options: FileURIHandler.writesAtomically ? .atomic : [])
+            #if os(WASI)
+            try data.write(to: url)
+            #else
+            try data.write(to: url, options: .atomic)
+            #endif
         } else {
             try text.write(to: url, atomically: FileURIHandler.writesAtomically, encoding: .utf8)
         }
