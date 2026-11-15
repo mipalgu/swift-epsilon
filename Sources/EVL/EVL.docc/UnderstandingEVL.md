@@ -59,6 +59,26 @@ repair. The caller chooses which fix to apply.
 All EOL constructs are available inside blocks and expressions, as listed in the
 EOL documentation.
 
+## Related Documentation
+
+### Command Line and Tutorials
+
+- [swift-epsilon](https://mipalgu.github.io/swift-modelling/documentation/swift_epsilon/index.html) - the command-line tool of swift-modelling
+- [Querying and Validating Models with EOL and EVL](https://mipalgu.github.io/swift-modelling/tutorials/swiftmodelling/epsilon-01-eol-evl/index.html)
+- [All tutorials](https://mipalgu.github.io/swift-modelling/tutorials/tutorials/index.html)
+
+### Epsilon Modules
+
+- [EOL](https://mipalgu.github.io/swift-epsilon/documentation/eol/) - the Epsilon Object Language
+- [ETL](https://mipalgu.github.io/swift-epsilon/documentation/etl/) - model-to-model transformation
+- [EGL](https://mipalgu.github.io/swift-epsilon/documentation/egl/) - text generation from templates
+
+### Related Packages
+
+- [swift-ecore](https://mipalgu.github.io/swift-ecore/documentation/ecore/) - the Ecore metamodels and models that programs work on
+- [swift-ecore OCL](https://mipalgu.github.io/swift-ecore/documentation/ocl/) - the OCL implementation that EVL constraints resemble
+- [swift-modelling](https://mipalgu.github.io/swift-modelling/) - command-line tools and tutorials for the whole toolkit
+
 ## Topics
 
 ### Essentials

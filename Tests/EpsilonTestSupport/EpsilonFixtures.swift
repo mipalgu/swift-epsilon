@@ -24,7 +24,7 @@ public enum EpsilonFixtures {
     ///
     /// - Parameters:
     ///   - name: The name by which programs refer to the model.
-    ///   - resourceSet: The resource set to load into.
+    ///   - resourceSet: The [`ResourceSet`](https://mipalgu.github.io/swift-ecore/documentation/ecore/resourceset/) to load into.
     /// - Returns: The model.
     /// - Throws: The error of the loader.
     public static func library(named name: String = "Library", in resourceSet: ResourceSet = ResourceSet()) async throws
@@ -38,7 +38,7 @@ public enum EpsilonFixtures {
     ///
     /// - Parameters:
     ///   - name: The name by which programs refer to the model.
-    ///   - resourceSet: The resource set to load into.
+    ///   - resourceSet: The [`ResourceSet`](https://mipalgu.github.io/swift-ecore/documentation/ecore/resourceset/) to load into.
     /// - Returns: The model.
     /// - Throws: The error of the loader.
     public static func tree(named name: String = "Tree", in resourceSet: ResourceSet = ResourceSet()) async throws
@@ -51,7 +51,7 @@ public enum EpsilonFixtures {
     ///
     /// - Parameters:
     ///   - name: The name by which programs refer to the model.
-    ///   - resourceSet: The resource set to create the model in.
+    ///   - resourceSet: The [`ResourceSet`](https://mipalgu.github.io/swift-ecore/documentation/ecore/resourceset/) to create the model in.
     /// - Returns: The model.
     /// - Throws: The error of the metamodel loader.
     public static func emptyGraph(named name: String = "Graph", in resourceSet: ResourceSet = ResourceSet()) async throws
