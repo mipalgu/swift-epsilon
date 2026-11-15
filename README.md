@@ -101,6 +101,22 @@ Each module has its own published documentation:
   [Getting Started](https://mipalgu.github.io/swift-epsilon/documentation/egl/gettingstarted),
   [Understanding EGL](https://mipalgu.github.io/swift-epsilon/documentation/egl/understandingegl)
 
+The `swift-epsilon` command-line tool of [swift-modelling](https://mipalgu.github.io/swift-modelling/) is described in
+[swift-epsilon](https://mipalgu.github.io/swift-modelling/documentation/swift_epsilon/index.html),
+and the Epsilon tutorials [Querying and Validating Models with EOL and EVL](https://mipalgu.github.io/swift-modelling/tutorials/swiftmodelling/epsilon-01-eol-evl/index.html) and
+[Transforming Models and Generating Text with ETL and EGL](https://mipalgu.github.io/swift-modelling/tutorials/swiftmodelling/epsilon-02-etl-egl/index.html)
+introduce it step by step (see all [tutorials](https://mipalgu.github.io/swift-modelling/tutorials/tutorials/index.html)).
+
+## Related Packages
+
+- [swift-ecore](https://mipalgu.github.io/swift-ecore/) - EMF/Ecore metamodelling, OCL, generator models and multi-level modelling ([GitHub](https://github.com/mipalgu/swift-ecore))
+- [swift-aql](https://mipalgu.github.io/swift-aql/) - AQL model queries ([GitHub](https://github.com/mipalgu/swift-aql))
+- [swift-mtl](https://mipalgu.github.io/swift-mtl/) - MTL model-to-text generation ([GitHub](https://github.com/mipalgu/swift-mtl))
+- [swift-atl](https://mipalgu.github.io/swift-atl/) - ATL model transformations ([GitHub](https://github.com/mipalgu/swift-atl))
+- [swift-henshin](https://mipalgu.github.io/swift-henshin/) - Henshin graph transformation, critical pair analysis and state-space exploration ([GitHub](https://github.com/mipalgu/swift-henshin))
+- [swift-xtend](https://mipalgu.github.io/swift-xtend/) - Xtend generators and transformations ([GitHub](https://github.com/mipalgu/swift-xtend))
+- [swift-modelling](https://mipalgu.github.io/swift-modelling/) - Command-line tools, code generators and tutorials for the whole toolkit ([GitHub](https://github.com/mipalgu/swift-modelling))
+
 ## Licence
 
 See the details in the LICENCE file.
@@ -121,4 +137,3 @@ Eclipse Public License 2.0.
 - Rose, Paige, Kolovos and Polack, "[The Epsilon Generation Language](https://doi.org/10.1007/978-3-540-69100-6_1)",
   ECMDA-FA 2008
 - [Eclipse Modeling Framework (EMF)](https://eclipse.dev/emf/) - The metamodelling foundation
-- [swift-ecore](https://github.com/mipalgu/swift-ecore) - The Swift Ecore metamodelling framework
