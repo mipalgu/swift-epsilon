@@ -177,16 +177,9 @@ enum EOLTypes {
     ///   - byName: Whether classes with equal names match.
     /// - Returns: Whether `eClass` conforms to `other`.
     static func conforms(_ eClass: EClass, to other: EClass, byName: Bool) -> Bool {
-        if isEObject(other) || same(eClass, other, byName: byName) { return true }
-        return eClass.allSuperTypes.contains { same($0, other, byName: byName) }
-    }
-
-    /// Whether a class is Ecore's `EObject`, the implicit supertype of every class.
-    ///
-    /// - Parameter eClass: The class to test.
-    /// - Returns: Whether `eClass` is `EObject`.
-    static func isEObject(_ eClass: EClass) -> Bool {
-        eClass.name == EcoreClassifier.eObject.rawValue
+        if eClass.conforms(to: other) { return true }
+        guard byName else { return false }
+        return eClass.name == other.name || eClass.allSuperTypes.contains { $0.name == other.name }
     }
 
     /// Whether two classes are the same class.
