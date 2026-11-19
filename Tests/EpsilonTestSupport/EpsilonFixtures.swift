@@ -61,6 +61,25 @@ public enum EpsilonFixtures {
         return await EOLModel.empty(name: name, packages: packages, resourceSet: resourceSet, uri: "memory:/graph.xmi")
     }
 
+    /// Creates an empty annotation model.
+    ///
+    /// The annotation metamodel has references typed with `EObject`, single- and many-valued,
+    /// containment and not, a reference typed with the Ecore class `EClass`, and a reference
+    /// typed with a class of a separate base metamodel whose subclass it defines.
+    ///
+    /// - Parameters:
+    ///   - name: The name by which programs refer to the model.
+    ///   - resourceSet: The [`ResourceSet`](https://mipalgu.github.io/swift-ecore/documentation/ecore/resourceset/) to create the model in.
+    /// - Returns: The model.
+    /// - Throws: The error of the metamodel loader.
+    public static func emptyAnnotations(named name: String = "Annotations", in resourceSet: ResourceSet = ResourceSet())
+        async throws -> EOLModel
+    {
+        let packages = try await ModelIO.registerMetamodels(
+            at: [url("Base.ecore"), url("Annotation.ecore")], in: resourceSet)
+        return await EOLModel.empty(name: name, packages: packages, resourceSet: resourceSet, uri: "memory:/annotations.xmi")
+    }
+
     /// Runs an EOL program and returns what it printed.
     ///
     /// - Parameters:
