@@ -168,7 +168,8 @@ enum EOLTypes {
     ///
     /// Classes match by identifier. Within one metamodel, where identifiers can
     /// differ (for example after the metamodel was loaded twice), they also match
-    /// by name.
+    /// by name. Every class conforms to Ecore's `EObject`, as every model element
+    /// is an `EObject`.
     ///
     /// - Parameters:
     ///   - eClass: The class to test.
@@ -176,8 +177,16 @@ enum EOLTypes {
     ///   - byName: Whether classes with equal names match.
     /// - Returns: Whether `eClass` conforms to `other`.
     static func conforms(_ eClass: EClass, to other: EClass, byName: Bool) -> Bool {
-        if same(eClass, other, byName: byName) { return true }
+        if isEObject(other) || same(eClass, other, byName: byName) { return true }
         return eClass.allSuperTypes.contains { same($0, other, byName: byName) }
+    }
+
+    /// Whether a class is Ecore's `EObject`, the implicit supertype of every class.
+    ///
+    /// - Parameter eClass: The class to test.
+    /// - Returns: Whether `eClass` is `EObject`.
+    static func isEObject(_ eClass: EClass) -> Bool {
+        eClass.name == EcoreClassifier.eObject.rawValue
     }
 
     /// Whether two classes are the same class.
